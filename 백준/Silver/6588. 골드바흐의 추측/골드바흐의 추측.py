@@ -1,24 +1,29 @@
 import sys
+input = sys.stdin.readline
 
-def solution():
-    is_prime = [True for _ in range(1000001)]
-    for i in range(2, 1001):
-        if is_prime[i]:
-            for j in range(i*i, 1000001, i):
-                is_prime[j] = False
+def get_primes(n):
+    is_primes = [True] * (n + 1)
+    is_primes[0] = is_primes[1] = False
+    
+    for i in range(2, int(n ** 0.5) + 1):
+        if is_primes[i]:
+            for j in range(i * i, n + 1, i):
+                is_primes[j] = False
+    return is_primes
+    
 
+def solve():
+    primes = get_primes(1000000)
     while True:
-        n = int(sys.stdin.readline())
+        n = int(input())
         if n == 0:
             break
-
-        for i in range(3, int(n/2)+1, 2):
-            if is_prime[i] and is_prime[n-i]:
-                print(f'{n} = {i} + {n-i}')
+        for p in range(3, n // 2 + 1, 2):
+            if primes[p] and primes[n-p]:
+                print(f'{n} = {p} + {n-p}')
                 break
-        else:
-            print("Goldbach's conjecture is wrong.")
-solution()            
-    
         
-    
+        
+
+if __name__ == "__main__":
+    solve()
