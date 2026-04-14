@@ -231,17 +231,139 @@ print(evaluate_postfix(tokens))  # 11
 
 ---
 
-## 4. 핵심 알고리즘 요약표
+## 4. 단조 스택 (Monotonic Stack)
+
+### 4.1 왜 필요한가?
+
+"각 원소에서 왼쪽(또는 오른쪽)으로 가장 가까운 더 크거나 작은 원소를 찾아라" 유형의 문제에서 브루트포스는 O(N²)가 된다. 단조 스택을 사용하면 **각 원소가 push 1회, pop 최대 1회**만 발생하므로 O(N)에 해결할 수 있다.
+
+---
+
+### 4.2 핵심 원리 — 분할 상환 분석
+
+while 루프가 있어도 O(N)인 이유:
+
+```
+N개의 원소를 처리할 때:
+- push: 정확히 N번 (각 원소는 한 번씩만 추가됨)
+- pop:  최대 N번 (한번 push된 원소는 최대 한 번만 제거됨)
+총 연산: 최대 2N번 → O(N)
+```
+
+while이 여러 번 도는 경우는 이전에 쌓인 원소들을 뒤늦게 한꺼번에 정리하는 것이다. 중복 방문이 없다.
+
+---
+
+### 4.3 두 가지 종류
+
+| 종류 | 스택 상태 | 사용 목적 |
+| :--- | :--- | :--- |
+| **단조 감소 스택** | 아래 → 위: 값이 감소 | 왼쪽/오른쪽에서 가장 가까운 **더 큰** 원소 찾기 |
+| **단조 증가 스택** | 아래 → 위: 값이 증가 | 왼쪽/오른쪽에서 가장 가까운 **더 작은** 원소 찾기 |
+
+---
+
+### 4.4 패턴: 왼쪽에서 가장 가까운 더 큰 원소 (단조 감소)
+
+```python
+def nearest_greater_left(arr):
+    n = len(arr)
+    result = [0] * n
+    stack = []  # 인덱스 저장
+
+    for i in range(n):
+        # 현재 값보다 작거나 같은 원소는 답이 될 수 없으므로 제거
+        while stack and arr[stack[-1]] < arr[i]:
+            stack.pop()
+
+        result[i] = stack[-1] + 1 if stack else 0  # 1-indexed라면 +1
+        stack.append(i)
+
+    return result
+```
+
+---
+
+### 4.5 트레이싱 예시: 백준 2493 탑 (`6 9 5 7 4`)
+
+각 탑이 발사한 레이저를 수신하는 탑의 번호를 구한다 (단조 감소 스택).
+
+```
+초기 스택: []
+
+i=1, h=6: 스택 비어있음 → 0 출력    push(6,1)  스택: [(6,1)]
+i=2, h=9: (6,1) 6<9 → pop          스택 비어있음 → 0 출력
+                                    push(9,2)  스택: [(9,2)]
+i=3, h=5: (9,2) 9>=5 → 정답=2      push(5,3)  스택: [(9,2),(5,3)]
+i=4, h=7: (5,3) 5<7 → pop
+          (9,2) 9>=7 → 정답=2       push(7,4)  스택: [(9,2),(7,4)]
+i=5, h=4: (7,4) 7>=4 → 정답=4      push(4,5)  스택: [(9,2),(7,4),(4,5)]
+
+결과: 0 0 2 2 4
+
+push 5회, pop 2회 → 총 7회 연산
+```
+
+```python
+import sys
+input = sys.stdin.readline
+
+def solve():
+    n = int(input())
+    tops = list(map(int, input().split()))
+    stack = []  # (높이, 1-indexed 번호)
+    result = []
+
+    for i in range(n):
+        while stack and stack[-1][0] < tops[i]:
+            stack.pop()
+
+        result.append(stack[-1][1] if stack else 0)
+        stack.append((tops[i], i + 1))
+
+    print(*result)
+
+if __name__ == "__main__":
+    solve()
+```
+
+---
+
+### 4.6 패턴: 오른쪽에서 가장 가까운 더 큰 원소
+
+오른쪽 방향은 **오른쪽에서 왼쪽으로** 순회하거나, pop할 때 답을 기록한다.
+
+```python
+def nearest_greater_right(arr):
+    n = len(arr)
+    result = [0] * n
+    stack = []  # 인덱스 저장
+
+    for i in range(n):
+        # i보다 작은 원소들의 오른쪽 답이 현재 i
+        while stack and arr[stack[-1]] < arr[i]:
+            idx = stack.pop()
+            result[idx] = i  # arr[i]가 arr[idx]의 오른쪽 첫 번째 더 큰 원소
+
+        stack.append(i)
+
+    return result
+```
+
+---
+
+## 5. 핵심 알고리즘 요약표
 
 | 알고리즘 | 목적 | 시간 복잡도 | 공간 복잡도 |
 | :--- | :--- | :--- | :--- |
 | **괄호 검증** | 괄호 쌍의 유효성 확인 | $O(N)$ | $O(N)$ |
 | **중위 → 후위 변환** | Shunting-yard | $O(N)$ | $O(N)$ |
 | **후위 표기식 계산** | 스택 기반 계산 | $O(N)$ | $O(N)$ |
+| **단조 스택** | 가장 가까운 크거나 작은 원소 탐색 | $O(N)$ | $O(N)$ |
 
 ---
 
-## 💡 코테 꿀팁
+## 6. 💡 코테 꿀팁
 
 * **스택이 빈 상태에서 pop을 시도하면 IndexError**: 항상 `if stack:` 또는 `if not stack: return False`로 방어한다.
 * **pop 순서 주의**: `a op b`를 계산할 때 `b = stack.pop()`, `a = stack.pop()` 순서가 맞아야 한다. 나눗셈, 뺄셈은 순서에 민감하다.
