@@ -2,12 +2,14 @@ def operations(set1, set2):
     s = set()
     for s1 in set1:
         for s2 in set2:
-            s.update([s1 + s2, s1 - s2, s1 * s2])
-            if s2 != 0: s.add(s1 // s2)
+            s.add(s1 + s2)
+            s.add(s1 * s2)
+            s.add(s1 - s2)
+            if s2: s.add(s1 // s2)
     return s
 
 def solution(N, number):
-    answer = -1
+
     # N을 i번 사용하여 만들 수 있는 모든 숫자의 집합
     dp = [set() for _ in range(9)]
     
@@ -18,8 +20,7 @@ def solution(N, number):
             dp[i].update(operations(dp[j], dp[i-j]))        
     
         if number in dp[i]:
-            answer = i
-            break
+            return i
             
-    return answer
+    return -1
     
