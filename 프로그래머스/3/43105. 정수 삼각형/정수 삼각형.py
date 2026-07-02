@@ -6,7 +6,7 @@ def solution(triangle):
         for j in range(len(dp[i])):
             if j == 0:
                 dp[i][j] += dp[i-1][j]
-            elif j == len(dp[i])-1:
+            elif j == i:
                 dp[i][j] += dp[i-1][j-1]
             else:
                 dp[i][j] += max(dp[i-1][j-1], dp[i-1][j]) 
