@@ -4,6 +4,7 @@ def solution(routes):
     
     for r in route:
         i, o = r
+
         if not overlaped:
             overlaped.append([i, o])
         else:
